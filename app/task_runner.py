@@ -20,8 +20,10 @@ class ThreadPool:
     def init_task_runners(self):
         """Initialize the task runners."""
         num_threads = self.get_num_of_threads()
+
         self.task_runners = [TaskRunner(
             self.task_queue, self.shutdown_event, self.job_status) for _ in range(num_threads)]
+        
         for task_runner in self.task_runners:
             task_runner.start()
 
@@ -54,9 +56,11 @@ class ThreadPool:
     def get_job(self, job_id):
         """Get the status of a job."""
         status = self.job_status.get(job_id)
+
         if status == "queued":
             return {"status": "queued"}
-        elif status == "running":
+
+        if status == "running":
             return {"status": "running"}
 
         path = f"data/jobs/{job_id}.json"

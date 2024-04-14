@@ -1,17 +1,22 @@
 """Module to define the routes for the webserver."""
 
-from app import webserver
 from flask import request, jsonify
+
+from app import webserver
 
 
 def dummy_state(op, question, state):
     """Run an operation on a question and state."""
     job_id = webserver.tasks_runner.add_job(op, webserver.data_ingestor, question, state)
+    webserver.log.info(f"Job {job_id} added to the queue")
+
     return jsonify({"job_id": job_id})
 
 def dummy_question(op, question):
     """Run an operation on a question."""
     job_id = webserver.tasks_runner.add_job(op, webserver.data_ingestor, question)
+    webserver.log.info(f"Job {job_id} added to the queue")
+
     return jsonify({"job_id": job_id})
 
 
@@ -24,7 +29,6 @@ def get_response(job_id):
 @webserver.route('/api/jobs', methods=['GET'])
 def get_jobs():
     """Get the status of all jobs."""
-
     def get_job_status(tasks_runner):
         results = []
         num_jobs = tasks_runner.task_queue.qsize()
@@ -34,22 +38,25 @@ def get_jobs():
 
     job_id = webserver.tasks_runner.add_job(get_job_status, webserver.tasks_runner)
 
-    result = wait_for_job_completion(webserver.tasks_runner, job_id)
-    return result
+    return wait_for_job_completion(webserver.tasks_runner, job_id)
 
 def wait_for_job_completion(tasks_runner, job_id):
     """Wait for a job to finish and return the result."""
     result = tasks_runner.get_job(job_id)
+
     while result["status"] == "running":
         result = tasks_runner.get_job(job_id)
+
     return result
 
 
 @webserver.route('/api/num_jobs', methods=['GET'])
 def get_num_jobs():
     """Get the number of jobs currently running."""
+    job_status_items = webserver.tasks_runner.job_status.items()
+
     return str(len([job_id for job_id, status
-                    in webserver.tasks_runner.job_status.items() if status == "running"]))
+                    in job_status_items if status == "running"]))
 
 
 @webserver.route('/api/graceful_shutdown', methods=['GET'])
