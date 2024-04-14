@@ -1,6 +1,8 @@
 Nume: Subțirică Florin-Ioan
 Grupă: 332CD
 
+<div align="center"><img src="https://media.tenor.com/Zf45U-rHMgkAAAAC/friday-good-morning.gif" width="300px"></div>
+
 # Tema 1 US-Nutrition-Activity-Stats-Server
 
 ## Overview
